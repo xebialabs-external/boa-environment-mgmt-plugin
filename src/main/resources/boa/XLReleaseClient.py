@@ -12,7 +12,7 @@ import json
 import urllib
 
 from distutils.version import LooseVersion
-from xlr.HttpClient import HttpClient
+from boa.HttpClient import HttpClient
 
 class XLReleaseClient(object):
     def __init__(self, http_connection, username=None, password=None):
@@ -37,45 +37,15 @@ class XLReleaseClient(object):
     def _is_using_filter(self):
         return LooseVersion(self.get_version()) < LooseVersion("7.2.0")
 
-    def update_release(self, release, release_description):
-        release["description"] = release_description
-        xlr_api_url = '/api/v1/releases/%s' % release["id"]
-        xlr_response = self.http_request.put_request(xlr_api_url, json.dumps(release), additional_headers={"Accept": "application/json",
-                                                                                                           "Content-Type": "application/json"})
-        xlr_response.raise_for_status()
-
-    def get_release_status(self, release_id):
-        xlr_api_url = '/api/v1/releases/%s' % release_id
-        xlr_response = self.http_request.get_request(
-            xlr_api_url, additional_headers={"Accept": "application/json"})
-        xlr_response.raise_for_status()
-        data = xlr_response.json()
-        return data["status"]
-
-    def get_updatable_variables(self, template_id):
-        xlr_api_url = '/api/v1/releases/%s/variables' % template_id
-        xlr_response = self.http_request.get_request(
-            xlr_api_url, additional_headers={"Accept": "application/json"})
-        xlr_response.raise_for_status()
-        return xlr_response.json()
-
-    def add_new_task(self, new_task_title, new_task_type, container_id):
-        xlr_api_url = '/tasks/%s' % container_id
-        content = {"title": new_task_title, "taskType": new_task_type}
+    def get_stage_id(self, stage_title):
+        xlr_api_url = '/api/v1/environments/stages/search'
+        content = {"title": stage_title}
         xlr_response = self.http_request.post_request(xlr_api_url, json.dumps(content),
                                                       additional_headers={"Accept": "application/json",
                                                                           "Content-Type": "application/json"})
         xlr_response.raise_for_status()
-        print "Created %s\n" % new_task_title
-        return xlr_response.json()
-
-    def update_task(self, updated_task):
-        xlr_api_url = '/tasks/%s' % updated_task['id']
-        content = updated_task
-        xlr_response = self.http_request.put_request(xlr_api_url, json.dumps(content),
-                                                     additional_headers={"Accept": "application/json",
-                                                                         "Content-Type": "application/json"})
-        xlr_response.raise_for_status()
-        print "Updated task %s\n" % updated_task['title']
+        print "Response for search Stage %s\n" % stage_title
+        data = xlr_response.json()
+        return data[0]["id"]
 
 

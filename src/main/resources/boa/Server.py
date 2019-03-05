@@ -9,12 +9,9 @@
 #
 
 
-from xlr.XLReleaseClient import XLReleaseClient
+from boa.XLReleaseClientUtil import XLReleaseClientUtil
 
 
-class XLReleaseClientUtil(object):
+xlr_client = XLReleaseClientUtil.create_xl_release_client(configuration)
+xlr_client.get_version()
 
-    @staticmethod
-    def create_xl_release_client(container, username=None, password=None):
-        client = XLReleaseClient.create_client(container, username, password)
-        return client

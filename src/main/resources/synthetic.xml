@@ -13,145 +13,40 @@
 <synthetic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://www.xebialabs.com/deployit/synthetic synthetic.xsd" xmlns="http://www.xebialabs.com/deployit/synthetic">
 
-    <type type="xlr.XlrControlTask" extends="xlrelease.PythonScript" virtual="true">
-        <property name="iconLocation" default="xlr/xlr.png" hidden="true"/>
+    <type type="boa.XlrControlTask" extends="xlrelease.PythonScript" virtual="true">
+        <property name="iconLocation" default="xlr/boa.png" hidden="true"/>
         <property name="taskColor" hidden="true" default="#AA217E"/>
     </type>
 
-    <type type="xlr.RemoteXlrControlTask" extends="xlr.XlrControlTask" virtual="true">
-        <property name="xlrServer" category="input" label="Server" referenced-type="xlr.Server" kind="ci"
+    <type type="boa.RemoteXlrControlTask" extends="boa.XlrControlTask" virtual="true">
+        <property name="xlrServer" category="input" label="Server" referenced-type="boa.Server" kind="ci"
                   description="The XL Release server to connect to."/>
         <property name="username" category="input" required="false"
                   description="Overrides the username used to connect to the server."/>
         <property name="password" password="true" required="false" category="input"
                   description="Overrides the password used to connect to the server."/>
     </type>
-
-    <type type="xlr.CreateAndStartSubRelease" label="XL Release: Sub Release" extends="xlr.RemoteXlrControlTask">
-        <property name="scriptLocation" default="xlr/CreateAndStartSubRelease.py" hidden="true"/>
-
-        <property name="templateName" category="input" label="Template Name" required="true"
-                  description="Name of the template from which to create the subrelease."/>
-        <property name="releaseTitle" category="input" label="Release Title" required="true"
-                  description="Name of the newly created subrelease."/>
-        <property name="releaseDescription" category="input" label="Release Description" required="false" size="large"
-                  description="Description of the subrelease."/>
-        <property name="variables" category="input" required="false" label="variables (deprecated)"
-                  description="Comma-separated key-value pairs for the values of variables required by the subrelease, e.g. var1=value1,var2=value2"/>
-        <property name="variableMap" category="input" required="false" label="variables" kind="map_string_string"
-                  description="Map of variables required by the subrelease, where key is the variable name and value the actual value"/>
-        <property name="asynch" category="input" required="false" kind="boolean" default="false"
-                  description="If [false], the task will wait for the subrelease to finish."/>
-        <property name="gateTaskTitle" category="input" required="false" kind="string"
-                  description="Title of the gate task in this release that should wait for the subrelease to complete. Skipped if not specified (blank)."/>
-
-        <property name="status" category="output"/>
+    <type type="boa.CreateEnv" label="BOA XL Release: Create Environment" extends="boa.RemoteXlrControlTask">
+        <property name="releaseEnvironment" category="input" label="Release Environment variable" required="true"
+                  description="Name of the release variable having release environment."/>
+        <property name="envNameToEnvTypeMapping" category="input" required="true"
+                  description="Name of the release variable having env name to env type mapping."/>
+        <property name="spkName" category="input" required="true"
+                  description="Name of the release variable having spk name"/>
     </type>
 
-    <type type="xlr.CreateTemplate" label="XL Release: Create Template" extends="xlr.RemoteXlrControlTask">
-        <property name="templateName" category="input" label="Template Name" required="true"
-                  description="Name of the template to create."/>
-        <property name="tags" category="input" required="false"
-                  description="Comma-separated list of tags to associate with this template e.g. tag1,tag2."/>
-
-        <property name="templateId" category="output" description="The ID of the created template."/>
+    <type type="boa.CreateApp" label="BOA XL Release: Create Application" extends="boa.RemoteXlrControlTask">
+        <property name="releaseEnvironment" category="input" label="Release Environment variable" required="true"
+                  description="Name of the release variable having release environment."/>
+        <property name="spkComponentsToRelease" category="input" required="true"
+                  description="Name of the release variable having component names."/>
+        <property name="envNameToEnvTypeMapping" category="input" required="true"
+                  description="Name of the release variable having env name to env type mapping."/>
+        <property name="spkName" category="input" required="true"
+                  description="Name of the release variable having spk name"/>
     </type>
 
-    <type type="xlr.DeletePhases" label="XL Release: Delete Phases" extends="xlr.RemoteXlrControlTask">
-        <property name="phases" category="input" required="false" label="phases (deprecated)"
-                  description="Comma-separated list of phases to delete - deprecated."/>
-        <property name="phasesToDelete" category="input" required="false" label="phases" kind="set_of_string"
-                  description="Phases to delete"/>
-    </type>
-
-    <type type="xlr.GetTaskId" label="XL Release: Get Task ID" extends="xlr.XlrControlTask">
-        <property name="scriptLocation" default="xlr/GetTaskId.py" hidden="true"/>
-
-        <property name="taskTitle" category="input" label="Task Title" required="true"
-                  description="Title of the task to get the id for."/>
-        <property name="taskId" category="output" description="The id of the task."/>
-    </type>
-
-   <type type="xlr.WaitForBlockingTask" label="XL Release: Wait for Blocking Task" extends="xlr.RemoteXlrControlTask">
-      <property name="scriptLocation" default="xlr/WaitForBlockingTask.py" hidden="true"/>
-      <property name="phaseName" label="Phase Name to check for running task" category="input"/>
-      <property name="taskName" label="Task Name to verify is not running" category="input"/>
-      <property name="pollInterval" category="input" kind="integer" label="Polling Interval" required="true"
-                default="30"/>
-      <property name="maxPolls" category="input" kind="integer" label="Max Polls" required="true" default="0"/>
-      <property name="Results" category="output"/>
-   </type>
-
-   <type type="xlr.GetTags" label="XL Release: Get Tags" extends="xlr.XlrControlTask">
-      <property name="scriptLocation" default="xlr/GetTags.py" hidden="true" />
-      <property name="tags" category="output" kind="list_of_string" />
-   </type>
-
-   <type type="xlr.AddTag" label="XL Release: Add Tags" extends="xlr.XlrControlTask">
-      <property name="scriptLocation" default="xlr/AddTag.py" hidden="true" />
-      <property name="newTag" category="input"  kind="string" />
-      <property name="tags"   category="output" kind="list_of_string" />
-   </type>
-
-   <type type="xlr.SetTags" label="XL Release: Set Tags" extends="xlr.XlrControlTask">
-      <property name="scriptLocation" default="xlr/SetTags.py" hidden="true" />
-      <property name="newTags" category="input"  kind="list_of_string" />
-      <property name="tags"    category="output" kind="list_of_string" />
-   </type>
-
-   <type type="xlr.AddAndRemoveTags" label="XL Release: Add or Remove Tags" extends="xlr.XlrControlTask">
-      <property name="scriptLocation" default="xlr/AddAndRemoveTags.py" hidden="true" />
-      <property name="tagsToRemove" kind="list_of_string" category="input" required="false" description="List of tags to remove from this release"/>
-      <property name="tagsToAdd" kind="list_of_string" category="input" required="false" description="List of tags to add to this release"/>
-   </type>
-
-    <type type="xlr.addXLDTask" label="XL Release: Add XL Deploy task" extends="xlr.RemoteXlrControlTask">
-        <property name="scriptLocation" default="xlr/CreateTaskInOtherRelease.py" hidden="true"/>
-        <property name="releaseName" category="input" label="Release Name" required="true"
-                  description="Name of the release to create the task."/>
-        <property name="phaseName" category="input" label="Phase Name" required="true"
-                  description="Name of the phase to create the task."/>
-        <property name="taskTitle" category="input" label="Task Title" required="true"
-                  description="Title for the teask to be created."/>
-        <property name="xldServer" category="input" label="Server" referenced-type="xldeploy.XLDeployServer"
-                  kind="ci" description="XL Deploy server to connect to."/>
-        <property name="deploymentPackage" category="input" label="Package" description="Version of the application to be deployed. Auto-complete is supported in this field."/>
-        <property name="deploymentEnvironment" category="input" label="Environment" description="Environment to deploy to. Auto-complete is supported in this field."/>
-        <property name="rollbackOnFailure" required="false" default="true" category="input" kind="boolean" label="Rollback on Failure" description="Rollback on failure controls whether or not the task is rolled back."/>
-
-    </type>
-
-    <type type="xlr.FailableGateTask" label="XL Release: Failable Gate" extends="xlrelease.PythonScript">
-        <property name="taskColor" hidden="true" default="#AA217E"/>
-        <property name="targetId" label="Release ID" category="input" required="true"
-                  description="ID of the release for which this task will wait to complete or fail."/>
-        <property name="targetStatus" label="Release Status" category="output" required="false"
-                  description="The status of the target release: one of COMPLETED, FAILED and ABORTED"/>
-    </type>
-
-    <type type="xlr.WaitForReleaseStatus" label="XL Release: Wait for Release Status" extends="xlrelease.PythonScript">
-        <property name="taskColor" hidden="true" default="#AA217E"/>
-
-        <property name="targetId" label="Release ID" category="input" required="true"
-                  description="ID of the release for which status to wait for."/>
-        <property name="untilInProgress" label="In Progress" category="input" required="false" kind="boolean"
-                  description="Pass when the release is in progress"/>
-        <property name="untilPaused" label="Paused" category="input" required="false" kind="boolean"
-                  description="Pass when the release is paused (can happen as part of a phase restart)"/>
-        <property name="untilFailing" label="Failing" category="input" required="false" kind="boolean"
-                  description="Pass when the release is failing (some tasks failed, some still in progress)"/>
-        <property name="untilFailed" label="Failed" category="input" required="false" kind="boolean"
-                  description="Pass when the release has failed"/>
-        <property name="untilCompleted" label="Completed" category="input" required="false" kind="boolean"
-                  description="Pass if the release has completed"/>
-        <property name="untilAborted" label="Aborted" category="input" required="false" kind="boolean"
-                  description="Pass if the release has been aborted"/>
-
-        <property name="targetStatus" label="Release Status" category="output" required="false"
-                  description="The matched status of the target release"/>
-    </type>
-
-    <type type="xlr.Server" label="XL Release: Server" extends="configuration.HttpConnection">
+    <type type="boa.Server" label="BOA XL Release: XLR Server" extends="configuration.HttpConnection">
         <property name="enableSslVerification" kind="boolean" default="true" label="Enable SSL Verification" />
     </type>
 </synthetic>
