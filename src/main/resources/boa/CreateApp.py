@@ -66,7 +66,7 @@ for env in environments:
 
 for app in applications:
     #Check if app is already there.
-    content = {"title": app, "environments": xlrEnvList}
+    content = {"title": app}
 
     xlrResponse = XLRequest(xlrAPIUrl+'/search', 'POST', json.dumps(content), credentials['username'], credentials['password'], 'application/json').send()
 
