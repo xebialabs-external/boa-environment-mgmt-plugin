@@ -48,4 +48,14 @@ class XLReleaseClient(object):
         data = xlr_response.json()
         return data[0]["id"]
 
-
+    def get_env_id(self, env_title,stage_title):
+        xlr_api_url = '/api/v1/environments/search'
+        content = """{"title":"%s","stage":"%s"}""" % (env_title, stage_title)
+        print content
+        xlr_response = self.http_request.post_request(xlr_api_url, content,
+                                                      additional_headers={"Accept": "application/json",
+                                                                          "Content-Type": "application/json"})
+        xlr_response.raise_for_status()
+        print "Response for search Stage %s\n" % stage_title
+        data = xlr_response.json()
+        return data[0]["id"]

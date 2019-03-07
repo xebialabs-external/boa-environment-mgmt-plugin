@@ -52,7 +52,7 @@ for env in environments:
     #Get Stage id
     stage_id = xlr_client.get_stage_id(stage)
 
-    envTitle = env + '-'+ spk
+    envTitle = spk.upper() + '-'+ env.upper()
 
     #Check if environment is already there.
     content = """{"title":"%s","stage":"%s"}""" % (envTitle, stage)

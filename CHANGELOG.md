@@ -9,15 +9,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## v0.0.1
 
-### Fixed
-- fix: Using correct parsing to display release url links in comments.
-
-### Improved
-- added automated testing framework
-
-## v2.3.3
-
-### Fixed
-- fix: `Sub Release` task now also inherits `Run automated tasks as User` settings from sub template. The task now uses the supported `v1` api.
- 
 

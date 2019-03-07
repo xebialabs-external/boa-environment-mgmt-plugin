@@ -17,6 +17,7 @@ from boa.XLReleaseClientUtil import XLReleaseClientUtil
 APPLICATION_CREATED_STATUS = 200
 APPLICATION_FOUND_STATUS = 200
 ENVIRONMENT_FOUND_STATUS = 200
+APPLICATION_UPDATED_STATUS = 200
 
 if xlrServer is None:
     print "No server provided."
@@ -50,15 +51,22 @@ for var in vars:
     elif var.key == spkComponentsToRelease:
         applications = var.value
 
+# Create env lists for api calls
+
 xlrEnvList = []
+xlrEnvIdList = []
 for env in environments:
-    xlrEnvList.append(env + '-'+ spk)
+    envTitle = spk.upper() + '-'+ env.upper()
+    xlrEnvList.append(envTitle)
+    # Get environment IDs
+    stage = typeMap[env]
+    envId = xlr_client.get_env_id(envTitle,stage)
+    xlrEnvIdList.append(envId)
+
 
 for app in applications:
     #Check if app is already there.
     content = {"title": app, "environments": xlrEnvList}
-
-    print content
 
     xlrResponse = XLRequest(xlrAPIUrl+'/search', 'POST', json.dumps(content), credentials['username'], credentials['password'], 'application/json').send()
 
@@ -67,45 +75,45 @@ for app in applications:
         if not len(data) == 0:
             appId = data[0]["id"]
             print "Found App %s in XLR" % (appId)
-            continue
+
+            # Create env list with the new environments.
+            envCompositeList = data[0]["environments"]
+            existingEnvList = []
+            for e in envCompositeList:
+                existingEnvList.append(e["id"])
+
+            deltaList = list(set(xlrEnvIdList +existingEnvList))
+            if len(deltaList) == 0:
+                continue
+            else:
+                #Update the app with new env
+                content = {"title": app, "environmentIds": deltaList}
+
+                xlrResponse = XLRequest(xlrAPIUrl+'/'+appId, 'PUT', json.dumps(content), credentials['username'], credentials['password'], 'application/json').send()
+
+                if xlrResponse.status == APPLICATION_UPDATED_STATUS:
+                    data = json.loads(xlrResponse.read())
+                    appId = data["id"]
+                    print "Updated %s in XLR" % (appId)
+                    continue
+                else:
+                    print "Failed to update App in XLR"
+                    xlrResponse.errorDump()
+                    sys.exit(1)
     else:
         print "Failed to find app in XLR"
         xlrResponse.errorDump()
         sys.exit(1)
 
-    # Get environment IDs
-    envIds = []
-    for env in environments:
-        envSearchAPIUrl = xlrUrl + '/api/v1/environments/search'
-        stage = typeMap[env]
-
-        envTitle = env + '-'+ spk
-        #Check if environment is already there.
-        content = """{"title":"%s","stage":"%s"}""" % (envTitle, stage)
-
-        xlrResponse = XLRequest(envSearchAPIUrl, 'POST', content, credentials['username'], credentials['password'], 'application/json').send()
-
-        if xlrResponse.status == ENVIRONMENT_FOUND_STATUS:
-            data = json.loads(xlrResponse.read())
-            if not len(data) == 0:
-                envId = data[0]["id"]
-                print "Found Env %s in XLR" % (envId)
-                envIds.append(envId)
-        else:
-            print "Failed to find environment in XLR"
-            xlrResponse.errorDump()
-            sys.exit(1)
 
 
     #Create App
-    content = {"title": app, "environmentIds": envIds}
 
-    print xlrAPIUrl
-    print content
+    content = {"title": app, "environmentIds": xlrEnvIdList}
+
 
     xlrResponse = XLRequest(xlrAPIUrl, 'POST', json.dumps(content), credentials['username'], credentials['password'], 'application/json').send()
 
-    envId = None
     if xlrResponse.status == APPLICATION_CREATED_STATUS:
         data = json.loads(xlrResponse.read())
         appId = data["id"]
