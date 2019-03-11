@@ -15,6 +15,7 @@ from datetime import date
 from boa.XLReleaseClientUtil import XLReleaseClientUtil
 
 ENVIRONMENT_CREATED_STATUS = 200
+ENVIRONMENT_UPDATED_STATUS = 200
 ENVIRONMENT_FOUND_STATUS = 200
 
 if xlrServer is None:
@@ -52,10 +53,12 @@ for env in environments:
     #Get Stage id
     stage_id = xlr_client.get_stage_id(stage)
 
+    exisitngLabelStringList = []
+
     envTitle = spk.upper() + '-'+ env.upper()
 
     #Check if environment is already there.
-    content = """{"title":"%s","stage":"%s"}""" % (envTitle, stage)
+    content = """{"title":"%s"}""" % (envTitle)
 
     xlrResponse = XLRequest(xlrAPIUrl+'/search', 'POST', content, credentials['username'], credentials['password'], 'application/json').send()
 
@@ -63,7 +66,32 @@ for env in environments:
         data = json.loads(xlrResponse.read())
         if not len(data) == 0:
             envId = data[0]["id"]
+            existingEnvTitle = data[0]["title"]
             print "Found Env %s in XLR" % (envId)
+            # Check if the stage is correct.
+            if not data[0]["stage"]["id"] == stage_id:
+                # Update stage
+
+                # Keep the existing labels in a list.
+                labelList = data[0]["labels"]
+                if not len(labelList) == 0:
+                    for label in labelList:
+                        exisitngLabelStringList.append(label["id"])
+
+                content = {"title": existingEnvTitle, "stageId": stage_id, "labelIds": exisitngLabelStringList}
+
+                xlrResponse = XLRequest(xlrAPIUrl+'/'+envId, 'PUT', json.dumps(content), credentials['username'], credentials['password'], 'application/json').send()
+
+                if xlrResponse.status == ENVIRONMENT_UPDATED_STATUS:
+                    data = json.loads(xlrResponse.read())
+                    appId = data["id"]
+                    print "Updated %s in XLR" % (envId)
+                    continue
+                else:
+                    print "Failed to update Environment in XLR"
+                    xlrResponse.errorDump()
+                    sys.exit(1)
+
             continue
     else:
         print "Failed to find environment in XLR"
