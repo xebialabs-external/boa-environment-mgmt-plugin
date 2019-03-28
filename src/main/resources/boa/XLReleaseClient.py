@@ -56,6 +56,8 @@ class XLReleaseClient(object):
                                                       additional_headers={"Accept": "application/json",
                                                                           "Content-Type": "application/json"})
         xlr_response.raise_for_status()
-        print "Response for search Stage %s\n" % stage_title
         data = xlr_response.json()
-        return data[0]["id"]
+        for d in data:
+            if d["title"]== env_title:
+                print "Response for search env %s  is %s\n" % (env_title,d["id"])
+                return d["id"]
