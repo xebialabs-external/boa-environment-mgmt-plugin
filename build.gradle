@@ -18,7 +18,7 @@ xlDocker {
   runPortMapping = '15516:5516'
 }
 
-version = '0.5.0'
+version = '0.6.0'
 
 repositories {
   mavenLocal()

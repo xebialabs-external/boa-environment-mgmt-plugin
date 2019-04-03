@@ -67,39 +67,44 @@ for env in environments:
 for app in applications:
     #Check if app is already there.
     content = {"title": app}
+    foundApp = False
 
     xlrResponse = XLRequest(xlrAPIUrl+'/search', 'POST', json.dumps(content), credentials['username'], credentials['password'], 'application/json').send()
 
     if xlrResponse.status == APPLICATION_FOUND_STATUS:
         data = json.loads(xlrResponse.read())
         if not len(data) == 0:
-            appId = data[0]["id"]
-            print "Found App %s in XLR" % (appId)
+            for idx,appElement in enumerate(data):
+                appId = appElement["id"]
+                existingAppTitle = appElement["title"]
+                if app == existingAppTitle:
+                    print "Found App %s in XLR" % (appId)
+                    foundApp = True
 
-            # Create env list with the new environments.
-            envCompositeList = data[0]["environments"]
-            existingEnvList = []
-            for e in envCompositeList:
-                existingEnvList.append(e["id"])
+                    # Create env list with the new environments.
+                    envCompositeList = appElement["environments"]
+                    existingEnvList = []
+                    for e in envCompositeList:
+                        existingEnvList.append(e["id"])
 
-            deltaList = list(set(xlrEnvIdList +existingEnvList))
-            if len(deltaList) == 0:
-                continue
-            else:
-                #Update the app with new env
-                content = {"title": app, "environmentIds": deltaList}
+                    deltaList = list(set(xlrEnvIdList +existingEnvList))
+                    if len(deltaList) == 0:
+                        continue
+                    else:
+                    #Update the app with new env
+                        content = {"title": app, "environmentIds": deltaList}
 
-                xlrResponse = XLRequest(xlrAPIUrl+'/'+appId, 'PUT', json.dumps(content), credentials['username'], credentials['password'], 'application/json').send()
+                        xlrResponse = XLRequest(xlrAPIUrl+'/'+appId, 'PUT', json.dumps(content), credentials['username'], credentials['password'], 'application/json').send()
 
-                if xlrResponse.status == APPLICATION_UPDATED_STATUS:
-                    data = json.loads(xlrResponse.read())
-                    appId = data["id"]
-                    print "Updated %s in XLR" % (appId)
-                    continue
-                else:
-                    print "Failed to update App in XLR"
-                    xlrResponse.errorDump()
-                    sys.exit(1)
+                        if xlrResponse.status == APPLICATION_UPDATED_STATUS:
+                            data = json.loads(xlrResponse.read())
+                            appId = data["id"]
+                            print "Updated %s in XLR" % (appId)
+                            continue
+                        else:
+                            print "Failed to update App in XLR"
+                            xlrResponse.errorDump()
+                            sys.exit(1)
     else:
         print "Failed to find app in XLR"
         xlrResponse.errorDump()
@@ -108,17 +113,17 @@ for app in applications:
 
 
     #Create App
+    if not foundApp:
+        content = {"title": app, "environmentIds": xlrEnvIdList}
 
-    content = {"title": app, "environmentIds": xlrEnvIdList}
 
+        xlrResponse = XLRequest(xlrAPIUrl, 'POST', json.dumps(content), credentials['username'], credentials['password'], 'application/json').send()
 
-    xlrResponse = XLRequest(xlrAPIUrl, 'POST', json.dumps(content), credentials['username'], credentials['password'], 'application/json').send()
-
-    if xlrResponse.status == APPLICATION_CREATED_STATUS:
-        data = json.loads(xlrResponse.read())
-        appId = data["id"]
-        print "Created %s in XLR" % (appId)
-    else:
-        print "Failed to create App in XLR"
-        xlrResponse.errorDump()
-        sys.exit(1)
+        if xlrResponse.status == APPLICATION_CREATED_STATUS:
+            data = json.loads(xlrResponse.read())
+            appId = data["id"]
+            print "Created %s in XLR" % (appId)
+        else:
+            print "Failed to create App in XLR"
+            xlrResponse.errorDump()
+            sys.exit(1)
