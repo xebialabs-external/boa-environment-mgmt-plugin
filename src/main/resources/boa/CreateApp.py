@@ -77,7 +77,7 @@ for app in applications:
             for idx,appElement in enumerate(data):
                 appId = appElement["id"]
                 existingAppTitle = appElement["title"]
-                if app == existingAppTitle:
+                if app.lower() == existingAppTitle.lower():
                     print "Found App %s in XLR" % (appId)
                     foundApp = True
 
